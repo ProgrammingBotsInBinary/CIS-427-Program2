@@ -21,7 +21,7 @@ sqlite3.h
 
 Once downloaded, Use WinSCP or something similar (SSH Client) to transfer the files to your UMICH server. (Make sure to transfer all four files)
 
-Once transfered, your going to need to compiple the .cpp files. To do so its very simple
+Once transfered, your going to need to compile the .cpp files. To do so its very simple
 
 client.cpp
 > g++ client.cpp -o client
