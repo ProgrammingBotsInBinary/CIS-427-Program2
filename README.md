@@ -33,5 +33,5 @@ After compiling both of the files you can now run them
 
 ```
 ./server
-./client
+./client localhost
 ```
