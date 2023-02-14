@@ -43,11 +43,11 @@ int main(int argc, char* argv[]) {
     
     // Check to see if the database was opened
     if (rc) {
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "[DB] Can't open database: %s\n", sqlite3_errmsg(db));
         return(0);
     }
     else {
-        fprintf(stderr, "Opened database successfully!\n");
+        fprintf(stderr, "[DB] Opened database successfully!\n");
     }
     
     // Create the SQL "users" table
@@ -96,11 +96,11 @@ int main(int argc, char* argv[]) {
             sqlite3_free(zErrMsg);
         }
         else {
-            fprintf(stdout, "\tStock Trader, 'StockTrader' was added to the table!.\n");
+            fprintf(stdout, "\t[USER] Stock Trader, 'StockTrader' was added to the table!.\n");
         }
     }
     else if (resultant == "USER_PRESENT") {
-        std::cout << "Users exist in the table, continuing.\n";
+        std::cout << "[USER] Users exist in the table, continuing.\n";
     }
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -122,13 +122,13 @@ int main(int argc, char* argv[]) {
     // Open the socket
     nSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (nSocket < 0) {
-        std::cout << "Socket not Opened!\n";
+        std::cout << "[SOCKET] Socket not Opened!\n";
         sqlite3_close(db);
-        std::cout << "Closing database!" << std::endl;
+        std::cout << "[SOCKET] Closing database!" << std::endl;
         exit(EXIT_FAILURE);
     }
     else {
-        std::cout << "The socket has been opened: " << nSocket << std::endl;
+        std::cout << "[SOCKET] The socket has been opened: " << nSocket << std::endl;
     }
     
     // Building the internet address structure
@@ -142,64 +142,64 @@ int main(int argc, char* argv[]) {
     int nOptLen = sizeof(nOptVal);
     nRet = setsockopt(nSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&nOptVal, nOptLen);
     if (!nRet) {
-        std::cout << "The setsockopt call was a success!\n";
+        std::cout << "[SOCKET] The setsockopt call was a success!\n";
     }
     else {
-        std::cout << "Failed setsockopt call!\n";
+        std::cout << "[SOCKET] Failed setsockopt call!\n";
         sqlite3_close(db);
-        std::cout << "Closing database!" << std::endl;
+        std::cout << "[DB] Closing database!" << std::endl;
         close(nSocket);
-        std::cout << "Closed the socket: " << nSocket << std::endl;
+        std::cout << "[SOCKET] Closed the socket: " << nSocket << std::endl;
         exit(EXIT_FAILURE);
     }
     
     //Bind socket to the local port
     nRet = (bind(nSocket, (struct sockaddr*)&srv, sizeof(srv)));
     if (nRet < 0) {
-        std::cout << "Failed to bind the socket to local port!\n";
+        std::cout << "[PORT] Failed to bind the socket to local port!\n";
         sqlite3_close(db);
-        std::cout << "Closing database!" << std::endl;
+        std::cout << "[DB] Closing database!" << std::endl;
         close(nSocket);
-        std::cout << "Closed the socket: " << nSocket << std::endl;
+        std::cout << "[SOCKET] Closed the socket: " << nSocket << std::endl;
         exit(EXIT_FAILURE);
     }
     else {
-        std::cout << "Bound socket to the local port!\n";
+        std::cout << "[SOCKET] Bound socket to the local port!\n";
     }
     
     //Listens to the command requests from the client
     nRet = listen(nSocket, max_wait);
     if (nRet < 0) {
-        std::cout << "Failure in listening to the local port!\n";
+        std::cout << "[PORT] Failure in listening to the local port!\n";
         sqlite3_close(db);
-        std::cout << "Closing the database!" << std::endl;
+        std::cout << "[DB] Closing the database!" << std::endl;
         close(nSocket);
-        std::cout << "Closed the socket: " << nSocket << std::endl;
+        std::cout << "[SOCKET] Closed the socket: " << nSocket << std::endl;
         exit(EXIT_FAILURE);
     }
     else {
-        std::cout << "Successfully listening to the local port!\n";
+        std::cout << "[PORT] Successfully listening to the local port!\n";
     }
     
     // Waits for connection, then receive and print texts
     while (1) {
         if ((nClient = accept(nSocket, (struct sockaddr*)&srv, &addr_len)) < 0) {
-            perror("Error encountered while accepting the connection!");
+            perror("[SOCKET] Error encountered while accepting the connection!");
             sqlite3_close(db);
-            std::cout << "Closing database!" << std::endl;
+            std::cout << "[DB] Closing database!" << std::endl;
             close(nSocket);
-            std::cout << "Closed the socket: " << nSocket << std::endl;
+            std::cout << "[SOCKET] Closed the socket: " << nSocket << std::endl;
             exit(EXIT_FAILURE);
         }
         else {
-            std::cout << "Client has successfully connected on the socket: " << nClient << std::endl << std::endl;
-            send(nClient, "Hello! You have been connected to the server!", 47, 0);
+            std::cout << "[SOCKET] Client has successfully connected on the socket: " << nClient << std::endl << std::endl;
+            send(nClient, "[SERVER] Hello! You have been connected to the server!", 47, 0);
         }
         
         while ((buf_len = (recv(nClient, buf, sizeof(buf), 0)))) {
             
             // Displays the message receieved:
-            std::cout << "SERVER> Recieved message: " << buf;
+            std::cout << "[SERVER] Recieved message: " << buf;
             
             // Begin parsing the command via the buffer
             command = buildCommand(buf);
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
                 
                 // Checks for proper command formatting
                 if (!extractInfo(buf, infoArr, command)) {
-                    send(nClient, "403 message format error: Missing information\n EX. Command: BUY stock_sybmol stock_amount price user_ID", sizeof(buf), 0);
+                    send(nClient, "[BUY] 403 message format error: Missing information\n [BUY] EX. Command: BUY stock_sybmol stock_amount price user_ID", sizeof(buf), 0);
                 }
                 else {
                     // Check if the user exists within the user table
@@ -218,30 +218,30 @@ int main(int argc, char* argv[]) {
                     
                     //Checks if SQL executed correctly
                     if (rc != SQLITE_OK) {
-                        fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                        fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                         sqlite3_free(zErrMsg);
-                        send(nClient, "SQL error", 10, 0);
+                        send(nClient, "[BUY] SQL error", 10, 0);
                     }
                     else if (resultant == "PRESENT") {
                         
                         // Confirm user exists
-                        fprintf(stdout, "User confirmed.\n");
+                        fprintf(stdout, "[BUY] User confirmed.\n");
                         
                         // Calculate the stock price
                         double stockPrice = std::stod(infoArr[1]) * std::stod(infoArr[2]);
-                        std::cout << "Stock Price: " << stockPrice << std::endl;
+                        std::cout << "[BUY] Stock Price: " << stockPrice << std::endl;
                         
                         // Gets the usd balance of the user
                         sql = "SELECT usd_balance FROM users WHERE users.ID=" + selectedUsr;
                         rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                         std::string usd_balance = resultant;
-                        std::cout << "User Balance: " << usd_balance << std::endl;
+                        std::cout << "[BUY] User Balance: " << usd_balance << std::endl;
                         
                         // Check SQL status
                         if (rc != SQLITE_OK) {
-                            fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                            fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                             sqlite3_free(zErrMsg);
-                            send(nClient, "SQL error", 10, 0);
+                            send(nClient, "[BUY] SQL error", 10, 0);
                         }
                         else if (stod(usd_balance) >= stockPrice) {
                             
@@ -249,13 +249,13 @@ int main(int argc, char* argv[]) {
                             double difference = stod(usd_balance) - stockPrice;
                             std::string sql = "UPDATE users SET usd_balance=" + std::to_string(difference) + " WHERE ID =" + selectedUsr + ";";
                             rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
-                            std::cout << "New User Balance: " << difference << std::endl;
+                            std::cout << "[BUY] New User Balance: " << difference << std::endl;
                             
                             // Check SQL status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                send(nClient, "SQL error", 10, 0);
+                                send(nClient, "[BUY] SQL error", 10, 0);
                             }
                             
                             // Check if record exists in table, then updates or creates a new one
@@ -264,35 +264,35 @@ int main(int argc, char* argv[]) {
                             
                             // Check SQL status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                send(nClient, "SQL error", 10, 0);
+                                send(nClient, "[BUY] SQL error", 10, 0);
                             }
                             
                             else if (resultant == "RECORD_PRESENT") {
                                 // Record exists in the table - update it
                                 sql = "UPDATE stocks SET stock_balance= stock_balance +" + infoArr[1] + " WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + selectedUsr + "';";
                                 rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg);
-                                std::cout << "Added " << infoArr[1] << " stock to " << infoArr[0] << " for " << selectedUsr << std::endl;
+                                std::cout << "[BUY] Added " << infoArr[1] << " stock to " << infoArr[0] << " for " << selectedUsr << std::endl;
                                 
                                 // SQL Status Check
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
-                                    send(nClient, "SQL error", 10, 0);
+                                    send(nClient, "[BUY] SQL error", 10, 0);
                                 }
                             }
                             else {
                                 // A record does not exist, so add a record
                                 sql = "INSERT INTO stocks(stock_symbol, stock_balance, user_id) VALUES ('" + infoArr[0] + "', '" + infoArr[1] + "', '" + selectedUsr + "');";
                                 rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg);
-                                std::cout << "New record created:\n\tStock Symbol: " << infoArr[0] << "\n\tStock Balance: " << infoArr[1] << "\n\tUserID: " << selectedUsr << std::endl;
+                                std::cout << "[BUY] New record created:\n\tStock Symbol: " << infoArr[0] << "\n\tStock Balance: " << infoArr[1] << "\n\tUserID: " << selectedUsr << std::endl;
                                 
                                 // SQL status check
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
-                                    send(nClient, "SQL error", 10, 0);
+                                    send(nClient, "[BUY] SQL error", 10, 0);
                                 }
                             }
                             
@@ -303,9 +303,9 @@ int main(int argc, char* argv[]) {
                             
                             // SQL Status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                send(nClient, "SQL error", 10, 0);
+                                send(nClient, "[BUY] SQL error", 10, 0);
                             }
                             
                             // Gets new stock_balances
@@ -314,38 +314,38 @@ int main(int argc, char* argv[]) {
                             
                             // SQL Status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                send(nClient, "SQL error", 10, 0);
+                                send(nClient, "[BUY] SQL error", 10, 0);
                             }
                             std::string stock_balance = resultant;
                             
                             // If reaching this point, the commands have completed successfully, return 200 to indicate success, and display new balance and stock balance
-                            std::string tempStr = "200 OK\n   [BOUGHT] New balance: " + stock_balance + " " + infoArr[0] + ". Balance $" + usd_balance;
+                            std::string tempStr = "[BUY] 200 OK\n[BOUGHT] New balance: " + stock_balance + " " + infoArr[0] + ". Balance $" + usd_balance;
                             send(nClient, tempStr.c_str(), sizeof(buf), 0);
                         }
                         else {
-                            std::cout << "SERVER> Not enough balance. Purchase Aborted." << std::endl;
-                            send(nClient, "403 message format error: not enough balance!", sizeof(buf), 0);
+                            std::cout << "[SERVER] Not enough balance. Purchase Aborted." << std::endl;
+                            send(nClient, "[BUY] 403 message format error: not enough balance!", sizeof(buf), 0);
                         }
                     }
                     else {
                         
                         // USER DOES NOT EXIST
-                        fprintf(stdout, "SERVER> User Does Not Exist in Users Table. Aborting Buy\n");
-                        std::string tempStr = "403 message format error: user " + selectedUsr + " does not exist!";
+                        fprintf(stdout, "[SERVER] User Does Not Exist in Users Table. Aborting Buy\n");
+                        std::string tempStr = "[BUY] 403 message format error: user " + selectedUsr + " does not exist!";
                         send(nClient, tempStr.c_str(), sizeof(buf), 0);
                     }
                 }
-                std::cout << "SERVER> Successfully executed BUY command\n\n";
+                std::cout << "[SERVER] Successfully executed BUY command\n\n";
             }
             
             else if (command == "SELL") {
                 
                 // Checks if the client used the command properly
                 if (!extractInfo(buf, infoArr, command)) {
-                    std::cout << "Invalid command: Missing information" << std::endl;
-                    send(nClient, "403 message format error: Missing information\n EX. Command: SELL stock_symbol stock_price amount userID", sizeof(buf), 0);
+                    std::cout << "[SELL] Invalid command: Missing information" << std::endl;
+                    send(nClient, "[SELL] 403 message format error: Missing information\n EX. Command: SELL stock_symbol stock_price amount userID", sizeof(buf), 0);
                 }
                 else {
                     std::string selectedUsr = infoArr[3];
@@ -356,9 +356,9 @@ int main(int argc, char* argv[]) {
                     
                     // SQL status check
                     if (rc != SQLITE_OK) {
-                        fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                        fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                         sqlite3_free(zErrMsg);
-                        send(nClient, "SQL error", 10, 0);
+                        send(nClient, "[SELL] SQL error", 10, 0);
                     }
                     else if (resultant == "PRESENT") {
                         
@@ -368,13 +368,13 @@ int main(int argc, char* argv[]) {
                         
                         // SQL check
                         if (rc != SQLITE_OK) {
-                            fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                            fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                             sqlite3_free(zErrMsg);
-                            send(nClient, "SQL error", 10, 0);
+                            send(nClient, "[SELL] SQL error", 10, 0);
                         }
                         else if (resultant == "RECORD_NOT_PRESENT") {
-                            std::cout << "SERVER> User doesn't own the selected stock. Aborting Sell\n";
-                            send(nClient, "403 message format error: User does not own this stock.", sizeof(buf), 0);
+                            std::cout << "[SERVER] User doesn't own the selected stock. Aborting Sell\n";
+                            send(nClient, "[SELL] ERROR User does not own this stock.", sizeof(buf), 0);
                         }
                         else {
                             // Checks if the user has enough stock to sell
@@ -386,16 +386,16 @@ int main(int argc, char* argv[]) {
                             
                             // SQL check
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                send(nClient, "SQL error", 10, 0);
+                                send(nClient, "[SELL] SQL error", 10, 0);
                             }
                             
                             double stock_balance = std::stod(resultant);
                             // Not enough stock in balance to sell
                             if (stock_balance < stockToSell) {
-                                std::cout << "SERVER> Attempting to sell more stock than the user owns. Aborting sell.\n";
-                                send(nClient, "403 message format error: Attempting to sell more stock than the user owns.", sizeof(buf), 0);
+                                std::cout << "[SERVER] Attempting to sell more stock than the user owns. Aborting sell.\n";
+                                send(nClient, "[SELL] ERROR Attempting to sell more stock than the user owns.", sizeof(buf), 0);
                             }
                             else {
                                 // Get dollars amount to sell
@@ -408,9 +408,9 @@ int main(int argc, char* argv[]) {
                                 
                                 // SQL status check
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
-                                    send(nClient, "SQL error", 10, 0);
+                                    send(nClient, "[SELL] SQL error", 10, 0);
                                 }
                                 
                                 // Updates Stocks table and removes the sold stock from table
@@ -419,9 +419,9 @@ int main(int argc, char* argv[]) {
                                 
                                 // SQL status check
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
-                                    send(nClient, "SQL error", 10, 0);
+                                    send(nClient, "[SELL] SQL error", 10, 0);
                                 }
                                 
                                 // Gets the new usd_balance
@@ -435,20 +435,20 @@ int main(int argc, char* argv[]) {
                                 std::string stock_balance = resultant;
                                 
                                 // Sells the command completed successfully
-                                std::string tempStr = "200 OK\n   [SOLD] New balance: " + stock_balance + " " + infoArr[0] + ". USD $" + usd_balance;
+                                std::string tempStr = "[SELL] 200 OK\n[SOLD] New balance: " + stock_balance + " " + infoArr[0] + ". USD $" + usd_balance;
                                 send(nClient, tempStr.c_str(), sizeof(buf), 0);
                             }
                         }
                     }
                     else {
-                        fprintf(stdout, "SERVER> User Does Not Exist in Users Table. Aborting Sell.\n");
-                        send(nClient, "403 message format error: user does not exist.", sizeof(buf), 0);
+                        fprintf(stdout, "[SERVER] User Does Not Exist in Users Table. Aborting Sell.\n");
+                        send(nClient, "[SELL] ERROR User does not exist.", sizeof(buf), 0);
                     }
                 }
-                std::cout << "SERVER> Successfully executed SELL command\n\n";
+                std::cout << "[SERVER] Successfully executed SELL command\n\n";
             }
             else if (command == "LIST") {
-                std::cout << "List command." << std::endl;
+                std::cout << "[LIST] List command." << std::endl;
                 resultant = "";
                 // Lists all the records in Stocks table for user_id = 1
                 std::string sql = "SELECT * FROM stocks WHERE stocks.user_id='1'";
@@ -458,23 +458,23 @@ int main(int argc, char* argv[]) {
                 
                 // SQL status check
                 if (rc != SQLITE_OK) {
-                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                    fprintf(stderr, "[LIST] SQL error: %s\n", zErrMsg);
                     sqlite3_free(zErrMsg);
-                    send(nClient, "SQL error", 10, 0);
+                    send(nClient, "[LIST] SQL error", 10, 0);
                 }
                 
                 std::string sendStr;
                 
                 if (resultant == "") {
-                    sendStr = "200 OK\n   No records in the Stock Database.";
+                    sendStr = "[LIST] 200 OK\n[LIST] No records in the Stock Database.";
                 }
                 else {
-                    sendStr = "200 OK\n   The list of records in the Stock database for user 1:\n  " + resultant;
+                    sendStr = "[LIST] 200 OK\n[LIST] The list of records in the Stock database for [User 1]:\n" + resultant;
                 }
                 send(nClient, sendStr.c_str(), sizeof(buf), 0);
             }
             else if (command == "BALANCE") {
-                std::cout << "Balance command." << std::endl;
+                std::cout << "[BALANCE] Balance command." << std::endl;
                 
                 // Check for user
                 std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=1), 'PRESENT', 'NOT_PRESENT') result;";
@@ -484,9 +484,9 @@ int main(int argc, char* argv[]) {
                 
                 // SQL check
                 if (rc != SQLITE_OK) {
-                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                    fprintf(stderr, "[BALANCE] SQL error: %s\n", zErrMsg);
                     sqlite3_free(zErrMsg);
-                    send(nClient, "SQL error", 10, 0);
+                    send(nClient, "[BALANCE] SQL error", 10, 0);
                 }
                 else if (resultant == "PRESENT") {
                     
@@ -504,12 +504,12 @@ int main(int argc, char* argv[]) {
                     rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                     user_name += " " + resultant;
                     
-                    std::string tempStr = "200 OK\n   Balance for user " + user_name + ": $" + usd_balance;
+                    std::string tempStr = "[BALANCE] 200 OK\n[BALANCE] Balance for user " + user_name + ": $" + usd_balance;
                     send(nClient, tempStr.c_str(), sizeof(buf), 0);
                 }
                 else {
-                    std::cout << "SERVER> User does not exist. Aborting Balance.\n";
-                    send(nClient, "User does not exist.", sizeof(buf), 0);
+                    std::cout << "[SERVER] User does not exist. Aborting Balance.\n";
+                    send(nClient, "[BALANCE] ERROR User does not exist.", sizeof(buf), 0);
                 }
             }
             
@@ -517,19 +517,19 @@ int main(int argc, char* argv[]) {
             else if (command == "SHUTDOWN") {
                 // Send command confirmation
                 send(nClient, "200 OK", 7, 0);
-                std::cout << "Shutdown command." << std::endl;
+                std::cout << "[CLIENT] Shutdown command." << std::endl;
                 
                 // Close the database
                 sqlite3_close(db);
-                std::cout << "Closed DB" << std::endl;
+                std::cout << "[DB] Closed DB" << std::endl;
                 
                 // Terminate the client connection
                 close(nClient);
-                std::cout << "Closed Client Connection: " << nClient << std::endl;
+                std::cout << "[CLIENT] Closed Client Connection: " << nClient << std::endl;
                 
                 // Close the socket
                 close(nSocket);
-                std::cout << "Closed Server socket: " << nSocket << std::endl;
+                std::cout << "[SERVER] Closed Server socket: " << nSocket << std::endl;
                 
                 // Exit
                 exit(EXIT_SUCCESS);
@@ -537,16 +537,16 @@ int main(int argc, char* argv[]) {
             
             // Close client, when the client quits
             else if (command == "QUIT") {
-                std::cout << "Quit command." << std::endl;
-                send(nClient, "200 OK", 7, 0);
+                std::cout << "[QUIT] Quit command." << std::endl;
+                send(nClient, "[QUIT] 200 OK", 7, 0);
                 close(nClient);
                 break;
             }
             
             // Default response to invalid command
             else {
-                std::cout << "SERVER> Command not recognized?" << std::endl;
-                send(nClient, "400 invalid command", 20, 0);
+                std::cout << "[SERVER] Command not recognized?" << std::endl;
+                send(nClient, "[SERVER] 400 invalid command", 20, 0);
             }
         }
     }
@@ -555,11 +555,11 @@ int main(int argc, char* argv[]) {
     
     // Close database
     sqlite3_close(db);
-    std::cout << "Closed DB" << std::endl;
+    std::cout << "[DB] Closed DB" << std::endl;
     
     // Close the socket
     close(nSocket);
-    std::cout << "Closed socket: " << nSocket << std::endl;
+    std::cout << "[SOCKET] Closed socket: " << nSocket << std::endl;
     
     // Exit
     exit(EXIT_SUCCESS);
