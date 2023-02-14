@@ -469,7 +469,7 @@ int main(int argc, char* argv[]) {
                     sendStr = "[LIST] 200 OK\n[LIST] No records in the Stock Database.";
                 }
                 else {
-                    sendStr = "[LIST] 200 OK\n[LIST] The list of records in the Stock database for [User 1]:\n" + resultant;
+                    sendStr = "[LIST] 200 OK\n[LIST] The list of records in the Stock database for [User 1]:\n    " + resultant;
                 }
                 send(nClient, sendStr.c_str(), sizeof(buf), 0);
             }

@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
     std::cout << buffer << std::endl;
 
     // While the program is still running
-    while (std::cout << "CLIENT> ") {
+    while (std::cout << "[CLIENT]> ") {
         // Read input from user
         fgets(buffer, max_output, stdin);
 
