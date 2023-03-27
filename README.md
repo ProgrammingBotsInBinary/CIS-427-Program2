@@ -1,4 +1,4 @@
-# CIS-427-Program1
+# CIS-427-Program2
 "Online Stock Trading" 
 ## Team Members
 Fadi Baza, Connor Fox, and Austin Hall
