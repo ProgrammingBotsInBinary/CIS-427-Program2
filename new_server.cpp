@@ -143,7 +143,8 @@ int main(int argc, char* argv[]) {
         fprintf(stdout, "Root not found! Creating a new root.\n");
         
         // User 1, Root User, root, root@umich.edu, password, balance of $999
-        sql = "INSERT INTO users VALUES (1, 'root@umich.edu', 'Root', 'User', 'root', 'password', 999);";
+        // USERID, email, firstname, lastname, user_name, password, balance
+        sql = "INSERT INTO users VALUES (1, 'root@umich.edu', 'Root', 'User', 'root', 'root01', 999);";
         rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
         
         if (rc != SQLITE_OK) {
@@ -164,7 +165,7 @@ int main(int argc, char* argv[]) {
     }
     
     // Checking if user StockTrader exists in the table, if this user doesn't exist, create it
-    sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='StockTrader'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
+    sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='mary'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
     rc = sqlite3_exec(db, sql, callback, ptr, &zErrMsg);
     
     if (rc != SQLITE_OK) {
@@ -177,7 +178,7 @@ int main(int argc, char* argv[]) {
         fprintf(stdout, "Creating a new user.\n");
         
         // User 1, Stock Trader, StockTrader, stocktrader@umich.edu, password, balance of $999
-        sql = "INSERT INTO users VALUES (2, 'stocktrader@umich.edu', 'Stock', 'Trader', 'StockTrader', 'password', 999);";
+        sql = "INSERT INTO users VALUES (2, 'mpoppins@umich.edu', 'Mary', 'Poppins', 'mary', 'mary01', 999);";
         rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
         
         if (rc != SQLITE_OK) {
@@ -186,11 +187,11 @@ int main(int argc, char* argv[]) {
         }
 
         else {
-            fprintf(stdout, "\t[USER] Stock Trader, 'StockTrader' was added to the table!.\n");
+            fprintf(stdout, "\t[USER] Mary Poppins, 'mary' was added to the table!.\n");
         }
     }
     else if (resultant == "USER_PRESENT") {
-        std::cout << "[USER] User StockTrader exists in the table, continuing.\n";
+        std::cout << "[USER] User mary exists in the table, continuing.\n";
     }
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -199,7 +200,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Checking if user DayTrader exists in the table, if this user doesn't exist, create it
-    sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='DayTrader'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
+    sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='john'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
     rc = sqlite3_exec(db, sql, callback, ptr, &zErrMsg);
     
     if (rc != SQLITE_OK) {
@@ -209,10 +210,10 @@ int main(int argc, char* argv[]) {
     else if (resultant == "USER_NOT_PRESENT") {
         
         // Creating a user if one doesn't already exist
-        fprintf(stdout, "Creating a new user. DayTrader.\n");
+        fprintf(stdout, "Creating a new user. john.\n");
         
         // User 1, Stock Trader, StockTrader, stocktrader@umich.edu, password, balance of $999
-        sql = "INSERT INTO users VALUES (3, 'daytrader@umich.edu', 'Day', 'Trader', 'DayTrader', 'password', 999);";
+        sql = "INSERT INTO users VALUES (3, 'jdoe@umich.edu', 'John', 'Doe', 'john', 'john01', 999);";
         rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
         
         if (rc != SQLITE_OK) {
@@ -220,11 +221,11 @@ int main(int argc, char* argv[]) {
             sqlite3_free(zErrMsg);
         }
         else {
-            fprintf(stdout, "\t[USER] Day Trader, 'DayTrader' was added to the table!.\n");
+            fprintf(stdout, "\t[USER] John Doe, 'john' was added to the table!.\n");
         }
     }
     else if (resultant == "USER_PRESENT") {
-        std::cout << "[USER] User DayTrader exists in the table, continuing.\n";
+        std::cout << "[USER] User john exists in the table, continuing.\n";
     }
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -233,7 +234,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Checking if user NightTrader exists in the table, if this user doesn't exist, create it
-    sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='NightTrader'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
+    sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='moe'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
     rc = sqlite3_exec(db, sql, callback, ptr, &zErrMsg);
     
     if (rc != SQLITE_OK) {
@@ -243,10 +244,10 @@ int main(int argc, char* argv[]) {
     else if (resultant == "USER_NOT_PRESENT") {
         
         // Creating a user if one doesn't already exist
-        fprintf(stdout, "Creating a new user. NightTrader.\n");
+        fprintf(stdout, "Creating a new user. 'moe'.\n");
         
         // User 4, Night Trader, NightTrader, nighttrader@umich.edu, password, balance of $999
-        sql = "INSERT INTO users VALUES (4, 'nighttrader@umich.edu', 'Night', 'Trader', 'NightTrader', 'password', 999);";
+        sql = "INSERT INTO users VALUES (4, 'moecurly@umich.edu', 'Moe', 'Curly', 'moe', 'moe01', 999);";
         rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
         
         if (rc != SQLITE_OK) {
@@ -254,11 +255,11 @@ int main(int argc, char* argv[]) {
             sqlite3_free(zErrMsg);
         }
         else {
-            fprintf(stdout, "\t[USER] Night Trader, 'NightTrader' was added to the table!.\n");
+            fprintf(stdout, "\t[USER] Moe Curly, 'MoeCurly' was added to the table!.\n");
         }
     }
     else if (resultant == "USER_PRESENT") {
-        std::cout << "[USER] User NightTrader exists in the table, continuing.\n";
+        std::cout << "[USER] User MoeCurly exists in the table, continuing.\n";
     }
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
