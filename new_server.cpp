@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
+#include <typeinfo>
 
 // SQLite3 related headers/definitions
 #include "sqlite3.h"
@@ -485,17 +486,19 @@ void* serverCommands(void* userData)
                 
                 // Checks for proper command formatting
                 if (!extractInfo(buf, infoArr, command)) {
-                    send(clientID, "[BUY] 403 message format error: Missing information\n [BUY] EX. Command: BUY stock_sybmol stock_amount price user_ID", sizeof(buf), 0);
+                    send(clientID, "[BUY1] 403 message format error: Missing information\n [BUY] EX. Command: BUY stock_sybmol stock_amount price user_ID", sizeof(buf), 0);
                 }
                 else {
-                    // Check if the user exists within the user table
-                    std::string selectedUsr = (std::string)id;
+                    // Check if the user exists within the user table (std::string)id
+                    std::string selectedUsr = infoArr[3];
+                    std::cout << "[Testing] UserID: " << typeid(selectedUsr).name() << std::endl;
                     std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=" + selectedUsr + "), 'PRESENT', 'NOT_PRESENT') result;";
                     rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                     
                     // Checks if SQL executed correctly
                     if (rc != SQLITE_OK) {
                         fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                        fprintf(stderr, "[BUY] Failed SQL statement: %s\n", sql.c_str());
                         sqlite3_free(zErrMsg);
                         //send(nClient, "[BUY] SQL error", 10, 0);
                     }
@@ -516,7 +519,7 @@ void* serverCommands(void* userData)
                         
                         // Check SQL status
                         if (rc != SQLITE_OK) {
-                            fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                            fprintf(stderr, "[BUY3] SQL error: %s\n", zErrMsg);
                             sqlite3_free(zErrMsg);
                             //send(nClient, "[BUY] SQL error", 10, 0);
                         }
@@ -635,6 +638,7 @@ void* serverCommands(void* userData)
                     // SQL status check
                     if (rc != SQLITE_OK) {
                         fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
+                        fprintf(stderr, "[BUY] Failed SQL statement: %s\n", sql.c_str());
                         sqlite3_free(zErrMsg);
                         //send(nClient, "[SELL] SQL error", 10, 0);
                     }
