@@ -81,40 +81,42 @@ int main(int argc, char* argv[]) {
         close(client_socket);
         return EXIT_FAILURE;
     }
-
-    // If is hasn't failed, the client will continue
-    std::cout << "Successfully connected to the server!\n";
-
-    // Receive the message from the server
-    recv(client_socket, buffer, max_output, 0);
-    
-    // Output the server message
-    std::cout << buffer << std::endl;
-
-    // While the program is still running
-    while (std::cout << "[CLIENT]> ") {
-        // Read input from user
-        fgets(buffer, max_output, stdin);
-
-        // Save a copy of the last command for later comparison
-        char last_command[max_output];
-        strncpy(last_command, buffer, sizeof(buffer));
-
-        // Send the message to the server
-        send(client_socket, buffer, max_output, 0);
-
-        // Receive the response from the server
-        recv(client_socket, buffer, max_output, 0);
+    else{
+            // If is hasn't failed, the client will continue
+        std::cout << "Successfully connected to the server!\n";
+        char buffer[255] = { 0 }; 
+        // Receive the message from the server
+        recv(client_socket, buffer, 255, 0);
         
-        // Output the buffer
-        std::cout << "CLIENT> " << buffer << std::endl << std::endl;
-      
-        // If quit is commanded
-        if (strcmp(last_command, "QUIT\n") == 0) {
-            close(client_socket); // Close the socket
-            std::cout << "Closed socket: " << client_socket << std::endl;
+        // Output the server message
+        std::cout << buffer << std::endl;
+
+        // While the program is still running
+        while (std::cout << "[CLIENT]> ") {
+            // Read input from user
+            fgets(buffer, max_output, stdin);
+
+            // Save a copy of the last command for later comparison
+            char last_command[max_output];
+            strncpy(last_command, buffer, sizeof(buffer));
+
+            // Send the message to the server
+            send(client_socket, buffer, max_output, 0);
+
+            // Receive the response from the server
+            recv(client_socket, buffer, max_output, 0);
             
-            exit(EXIT_SUCCESS); // Exit program
+            // Output the buffer
+            std::cout << "CLIENT> " << buffer << std::endl << std::endl;
+        
+            // If quit is commanded
+            if (strcmp(last_command, "QUIT\n") == 0) {
+                close(client_socket); // Close the socket
+                std::cout << "Closed socket: " << client_socket << std::endl;
+                
+                exit(EXIT_SUCCESS); // Exit program
+            }
         }
     }
+
 }

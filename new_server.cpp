@@ -91,7 +91,8 @@ void clientData();
 
 // Main Function
 int main(int argc, char* argv[]) {
-    
+
+    #pragma region Database setup
     // Open connection to the database
     rc = sqlite3_open("DB.sqlite", &db);
     
@@ -128,7 +129,6 @@ int main(int argc, char* argv[]) {
     );";
     rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
 
-#pragma region userDeclaration
 
      // Checking if root exists in the table, if this root doesn't exist, create it
     sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.user_name='root'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
@@ -270,8 +270,8 @@ int main(int argc, char* argv[]) {
 
     #pragma endregion
     
-    std::string infoArr[4];
-    std::string command = "";
+    //std::string infoArr[4];
+    //std::string command = "";
     
     // Open the socket
     nSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -455,7 +455,7 @@ void* serverCommands(void* userData)
     // Waits for connection, then receive and print texts
     while (1) 
     {
-        char buf[256] = {0, };
+        char Buff[256] = {0, };
         
         /*if ((nClient = accept(nSocket, (struct sockaddr*)&srv, &addr_len)) < 0) {
             perror("[SOCKET] Error encountered while accepting the connection!");
@@ -470,169 +470,168 @@ void* serverCommands(void* userData)
             send(nClient, "[SERVER] Hello! You have been connected to the server!", 47, 0);
         }*/
         
-        while ((buf_len = (recv(clientID, buf, sizeof(buf), 0)))) {
+        while ((buf_len = (recv(clientID, Buff, sizeof(Buff), 0)))) {
             
             // Displays the message receieved:
-            std::cout << "[SERVER] Recieved message: " << buf;
+            std::cout << "[SERVER] Recieved message: " << Buff;
             
             // Begin parsing the command via the buffer
-            command = buildCommand(buf);
+            command = buildCommand(Buff);
             
             if (command == "LOGIN") {
                 send(clientID, "You are already logged in", 27, 0);
             }
 
-            if (command == "BUY") {
-                
-                // Checks for proper command formatting
-                if (!extractInfo(buf, infoArr, command)) {
-                    send(clientID, "[BUY1] 403 message format error: Missing information\n [BUY] EX. Command: BUY stock_sybmol stock_amount price user_ID", sizeof(buf), 0);
+            else if (command == "BUY") {
+                std::cout << "Buy command!" << std::endl;
+                //send(clientID, "You sent the BUY command!", 26, 0);
+
+
+                // Checks if the client used the command properly
+                if (!extractInfo(Buff, infoArr, command)) {
+                    send(clientID, "403 message format error: Missing information\n EX. Command: BUY crypto_name #_to_buy price userID", sizeof(Buff), 0);
+                    std::cout << "extraction Error" << std::endl;
                 }
                 else {
-                    // Check if the user exists within the user table (std::string)id
-                    std::string selectedUsr = infoArr[3];
-                    std::cout << "[Testing] UserID: " << typeid(selectedUsr).name() << std::endl;
-                    std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=" + selectedUsr + "), 'PRESENT', 'NOT_PRESENT') result;";
+                    // Check if selected user exists in users table 
+                    std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=" + (std::string)id + "), 'PRESENT', 'NOT_PRESENT') result;";
                     rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
-                    
-                    // Checks if SQL executed correctly
+                    std::cout << "RC is equal to: " << rc << std::endl;
+
+                    //Check if SQL executed correctly
                     if (rc != SQLITE_OK) {
-                        fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
-                        fprintf(stderr, "[BUY] Failed SQL statement: %s\n", sql.c_str());
+                        fprintf(stderr, "SQL error: %s\n", zErrMsg);
                         sqlite3_free(zErrMsg);
-                        //send(nClient, "[BUY] SQL error", 10, 0);
+                        //send(clientID, "SQL error", 10, 0);
                     }
                     else if (resultant == "PRESENT") {
-                        
-                        // Confirm user exists
-                        fprintf(stdout, "[BUY] User confirmed.\n");
-                        
-                        // Calculate the stock price
+                        // USER EXISTS
+                        fprintf(stdout, "User Exists in Users Table.\n");
+
+                        // Calculate crypto price
                         double stockPrice = std::stod(infoArr[1]) * std::stod(infoArr[2]);
-                        std::cout << "[BUY] Stock Price: " << stockPrice << std::endl;
-                        
-                        // Gets the usd balance of the user
-                        sql = "SELECT usd_balance FROM users WHERE users.ID=" + selectedUsr;
+                        std::cout << "Stock Price: " << stockPrice << std::endl;
+
+                        // Get the usd balance of the user
+                        sql = "SELECT usd_balance FROM users WHERE users.ID=" + (std::string)id;
                         rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                         std::string usd_balance = resultant;
-                        std::cout << "[BUY] User Balance: " << usd_balance << std::endl;
-                        
-                        // Check SQL status
+                        std::cout << "Current User Balance: " << usd_balance << std::endl;
+
+                        //Check if SQL executed correctly
                         if (rc != SQLITE_OK) {
-                            fprintf(stderr, "[BUY3] SQL error: %s\n", zErrMsg);
+                            fprintf(stderr, "SQL error: %s\n", zErrMsg);
                             sqlite3_free(zErrMsg);
-                            //send(nClient, "[BUY] SQL error", 10, 0);
+                            //send(clientID, "SQL error", 10, 0);
                         }
                         else if (stod(usd_balance) >= stockPrice) {
-                            
-                            // If the user had enough balance, update the new balance.
+                            // User has enough in balance to make the purchase
+                            // Update usd_balance with new balance
                             double difference = stod(usd_balance) - stockPrice;
-                            std::string sql = "UPDATE users SET usd_balance=" + std::to_string(difference) + " WHERE ID =" + selectedUsr + ";";
+                            std::string sql = "UPDATE users SET usd_balance=" + std::to_string(difference) + " WHERE ID =" + id + ";";
                             rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
-                            std::cout << "[BUY] New User Balance: " << difference << std::endl;
-                            
-                            // Check SQL status
+                            std::cout << "User Balance Updated: " << difference << std::endl;
+
+                            //Check if SQL executed correctly
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                //send(nClient, "[BUY] SQL error", 10, 0);
+                                //send(clientID, "SQL error", 10, 0);
                             }
-                            
-                            // Check if record exists in table, then updates or creates a new one
-                            sql = "SELECT IIF(EXISTS(SELECT 1 FROM stocks WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + selectedUsr + "'), 'RECORD_PRESENT', 'RECORD_NOT_PRESENT') result;";
+
+                            // Add new record or update record to crypto table
+                            // Checks if record already exists in cryptos
+                            sql = "SELECT IIF(EXISTS(SELECT 1 FROM stocks WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + id + "'), 'RECORD_PRESENT', 'RECORD_NOT_PRESENT') result;";
                             rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
-                            
-                            // Check SQL status
+
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                //send(nClient, "[BUY] SQL error", 10, 0);
+                                //send(clientID, "SQL error", 10, 0);
                             }
-                            
                             else if (resultant == "RECORD_PRESENT") {
-                                // Record exists in the table - update it
-                                sql = "UPDATE stocks SET stock_balance= stock_balance +" + infoArr[1] + " WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + selectedUsr + "';";
+                                // A record exists, so update the record
+                                sql = "UPDATE stocks SET stock_balance= stock_balance +" + infoArr[1] + " WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + id + "';";
                                 rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg);
-                                std::cout << "[BUY] Added " << infoArr[1] << " stock to " << infoArr[0] << " for " << selectedUsr << std::endl;
-                                
-                                // SQL Status Check
+                                std::cout << "Added " << infoArr[1] << " crypto to " << infoArr[0] << " for " << id << std::endl;
+
+                                //Check if SQL executed correctly
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
-                                    //send(nClient, "[BUY] SQL error", 10, 0);
+                                    //send(clientID, "SQL error", 10, 0);
                                 }
                             }
                             else {
                                 // A record does not exist, so add a record
-                                sql = "INSERT INTO stocks(stock_symbol, stock_balance, user_id) VALUES ('" + infoArr[0] + "', '" + infoArr[1] + "', '" + selectedUsr + "');";
+                                sql = "INSERT INTO stocks(stock_symbol, stock_balance, user_id) VALUES ('" + infoArr[0] + "', '" + infoArr[1] + "', '" + id + "');";
                                 rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg);
-                                std::cout << "[BUY] New record created:\n\tStock Symbol: " << infoArr[0] << "\n\tStock Balance: " << infoArr[1] << "\n\tUserID: " << selectedUsr << std::endl;
-                                
-                                // SQL status check
+                                std::cout << "New record created:\n\tStock Name: " << infoArr[0] << "\n\tStock Balance: " << infoArr[1] << "\n\tUserID: " << id << std::endl;
+
+                                //Check if SQL executed correctly
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
-                                    //send(nClient, "[BUY] SQL error", 10, 0);
+                                    //send(clientID, "SQL error", 10, 0);
                                 }
                             }
-                            
-                            // Balance
-                            sql = "SELECT usd_balance FROM users WHERE users.ID=" + selectedUsr;
+
+                            // Get the new usd_balance
+                            sql = "SELECT usd_balance FROM users WHERE users.ID=" + id;
                             rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                             usd_balance = resultant;
-                            
-                            // SQL Status
+
+                            //Check if SQL executed correctly
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                //send(nClient, "[BUY] SQL error", 10, 0);
+                                //send(clientID, "SQL error", 10, 0);
                             }
-                            
-                            // Gets new stock_balances
-                            sql = "SELECT stock_balance FROM stocks WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + selectedUsr + "';";
+
+                            // Get the new stock_balance
+                            sql = "SELECT stock_balance FROM stocks WHERE stocks.stock_symbol='" + infoArr[0] + "' AND stocks.user_id='" + id + "';";
                             rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
-                            
-                            // SQL Status
+
+                            //Check if SQL executed correctly
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
-                                //send(nClient, "[BUY] SQL error", 10, 0);
+                                //send(clientID, "SQL error", 10, 0);
                             }
                             std::string stock_balance = resultant;
-                            
-                            // If reaching this point, the commands have completed successfully, return 200 to indicate success, and display new balance and stock balance
-                            std::string tempStr = "[BUY] 200 OK\n[BOUGHT] New balance: " + stock_balance + " " + infoArr[0] + ". Balance $" + usd_balance;
+
+                            // The command completed successfully, return 200 OK, the new usd_balance and new stock_balance
+                            std::string tempStr = "200 OK\n   BOUGHT: New balance: " + stock_balance + " " + infoArr[0] + ". USD balance $" + usd_balance;
                             send(clientID, tempStr.c_str(), sizeof(buf), 0);
                         }
                         else {
-                            std::cout << "[SERVER] Not enough balance. Purchase Aborted." << std::endl;
-                            send(clientID, "[BUY] 403 message format error: not enough balance!", sizeof(buf), 0);
+                            std::cout << "SERVER> Not enough balance. Purchase Aborted." << std::endl;
+                            send(clientID, "403 message format error: not enough USD", sizeof(Buff), 0);
                         }
                     }
-
                     else {
-                        
                         // USER DOES NOT EXIST
-                        fprintf(stdout, "[SERVER] User Does Not Exist in Users Table. Aborting Buy\n");
-                        std::string tempStr = "[BUY] 403 message format error: user " + selectedUsr + " does not exist!";
-                        send(clientID, tempStr.c_str(), sizeof(buf), 0);
+                        fprintf(stdout, "SERVER> User Does Not Exist in Users Table. Aborting Buy\n");
+                        std::string tempStr = "403 message format error: user " + id + " does not exist";
+                        send(clientID, tempStr.c_str(), sizeof(Buff), 0);
                     }
                 }
-                std::cout << "[SERVER] Successfully executed BUY command\n\n";
+
+                std::cout << "SERVER> Successfully executed BUY command\n\n";
             }
             
             else if (command == "SELL") {
                 
                 // Checks if the client used the command properly
-                if (!extractInfo(buf, infoArr, command)) {
+                if (!extractInfo(Buff, infoArr, command)) {
                     std::cout << "[SELL] Invalid command: Missing information" << std::endl;
-                    send(clientID, "[SELL] 403 message format error: Missing information\n EX. Command: SELL stock_symbol stock_price amount userID", sizeof(buf), 0);
+                    send(clientID, "[SELL] 403 message format error: Missing information\n EX. Command: SELL stock_symbol stock_price amount userID", sizeof(Buff), 0);
                 }
                 else {
                     std::string selectedUsr = (std::string)id;
                     
                     // Check if the user exists
-                    std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=" + selectedUsr + "), 'PRESENT', 'NOT_PRESENT') result;";
+                    std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=" + id + "), 'PRESENT', 'NOT_PRESENT') result;";
                     rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                     
                     // SQL status check
@@ -656,7 +655,7 @@ void* serverCommands(void* userData)
                         }
                         else if (resultant == "RECORD_NOT_PRESENT") {
                             std::cout << "[SERVER] User doesn't own the selected stock. Aborting Sell\n";
-                            send(clientID, "[SELL] ERROR User does not own this stock.", sizeof(buf), 0);
+                            send(clientID, "[SELL] ERROR User does not own this stock.", sizeof(Buff), 0);
                         }
                         else {
                             // Checks if the user has enough stock to sell
@@ -677,7 +676,7 @@ void* serverCommands(void* userData)
                             // Not enough stock in balance to sell
                             if (stock_balance < stockToSell) {
                                 std::cout << "[SERVER] Attempting to sell more stock than the user owns. Aborting sell.\n";
-                                send(clientID, "[SELL] ERROR Attempting to sell more stock than the user owns.", sizeof(buf), 0);
+                                send(clientID, "[SELL] ERROR Attempting to sell more stock than the user owns.", sizeof(Buff), 0);
                             }
                             else {
                                 // Get dollars amount to sell
@@ -707,7 +706,7 @@ void* serverCommands(void* userData)
                                 }
                                 
                                 // Gets the new usd_balance
-                                sql = "SELECT usd_balance FROM users WHERE users.ID=" + selectedUsr;
+                                sql = "SELECT usd_balance FROM users WHERE users.ID=" + id;
                                 rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
                                 std::string usd_balance = resultant;
                                 
@@ -718,20 +717,20 @@ void* serverCommands(void* userData)
                                 
                                 // Sells the command completed successfully
                                 std::string tempStr = "[SELL] 200 OK\n[SOLD] New balance: " + stock_balance + " " + infoArr[0] + ". USD $" + usd_balance;
-                                send(clientID, tempStr.c_str(), sizeof(buf), 0);
+                                send(clientID, tempStr.c_str(), sizeof(Buff), 0);
                             }
                         }
                     }
                     else {
                         fprintf(stdout, "[SERVER] User Does Not Exist in Users Table. Aborting Sell.\n");
-                        send(clientID, "[SELL] ERROR User does not exist.", sizeof(buf), 0);
+                        send(clientID, "[SELL] ERROR User does not exist.", sizeof(Buff), 0);
                     }
                 }
                 std::cout << "[SERVER] Successfully executed SELL command\n\n";
             }
 
             else if (command == "LIST") {
-                std::string selectedUsr = (std::string)id;
+                std::string selectedUsr = id;
 
                 //std::cout << "[LIST] List command." << std::endl;
                 if (idINT == 1)
@@ -758,7 +757,7 @@ void* serverCommands(void* userData)
                 else {
                     sendStr = "[LIST] 200 OK\n[LIST] The list of records in the Stock database for [Users]:\n    " + resultant;
                 }
-                send(clientID, sendStr.c_str(), sizeof(buf), 0);
+                send(clientID, sendStr.c_str(), sizeof(Buff), 0);
                 }
 
                 else
@@ -788,7 +787,7 @@ void* serverCommands(void* userData)
                     {
                         sendStr = "[LIST] 200 OK\n[LIST] The list of records in the Stock database for [User " + selectedUsr + "]:\n    " + resultant;
                     }
-                send(clientID, sendStr.c_str(), sizeof(buf), 0);
+                send(clientID, sendStr.c_str(), sizeof(Buff), 0);
 
                 }
             }
@@ -825,11 +824,11 @@ void* serverCommands(void* userData)
                     user_name += " " + resultant;
                     
                     std::string tempStr = "[BALANCE] 200 OK\n[BALANCE] Balance for user " + user_name + ": $" + usd_balance;
-                    send(clientID, tempStr.c_str(), sizeof(buf), 0);
+                    send(clientID, tempStr.c_str(), sizeof(Buff), 0);
                 }
                 else {
                     std::cout << "[SERVER] User does not exist. Aborting Balance.\n";
-                    send(clientID, "[BALANCE] ERROR User does not exist.", sizeof(buf), 0);
+                    send(clientID, "[BALANCE] ERROR User does not exist.", sizeof(Buff), 0);
                 }
             }
 
@@ -937,10 +936,10 @@ void* serverCommands(void* userData)
                 else if (resultant == "PRESENT") {
                     std::string deposit = "";
 
-                    for (int i = (command.length() + 1); i < strlen(buf); i++) {
-                        if (buf[i] == '\n')
+                    for (int i = (command.length() + 1); i < strlen(Buff); i++) {
+                        if (Buff[i] == '\n')
                             break;
-                        deposit += buf[i];
+                        deposit += Buff[i];
                     }
 
                     sql = "UPDATE users SET usd_balance= usd_balance +" + deposit + " WHERE users.ID='" + id + "';";
@@ -959,11 +958,11 @@ void* serverCommands(void* userData)
                     user_name += " " + resultant; // Gets ID
 
                     std::string tempStr = "[SERVER] 200 OK\n[BALANCE] New balance: " + user_name + ": $" + usd_balance;
-                    send(clientID, tempStr.c_str(), sizeof(buf), 0); // Displays confirmation
+                    send(clientID, tempStr.c_str(), sizeof(Buff), 0); // Displays confirmation
                 }
                 else {
                     std::cout << "[SERVER] User does not exist. Aborting Balance.\n";
-                    send(clientID, "[CLIENT] User does not exist.", sizeof(buf), 0);
+                    send(clientID, "[CLIENT] User does not exist.", sizeof(Buff), 0);
                 }
             }
 
@@ -976,7 +975,7 @@ void* serverCommands(void* userData)
                 {
                     result += (list.at(i).user + " " + list.at(i).ip + "\n");
                 }
-                send(clientID, result.c_str(), sizeof(buf), 0);
+                send(clientID, result.c_str(), sizeof(Buff), 0);
             }
 
             else if (command == "LOOKUP") 
@@ -987,10 +986,10 @@ void* serverCommands(void* userData)
                 std::string sendStr;         // Term to be sent to user
                 resultant = "";              // Result
 
-                for (int i = (command.length() + 1); i < strlen(buf); i++) {
-                    if (buf[i] == '\n')
+                for (int i = (command.length() + 1); i < strlen(Buff); i++) {
+                    if (Buff[i] == '\n')
                         break;
-                    searchTerm += buf[i];
+                    searchTerm += Buff[i];
                 }
 
                 std::string sql = "SELECT COUNT(stock_symbol) FROM (SELECT * FROM stocks WHERE user_id = " + id + ") WHERE stock_symbol LIKE '%" + searchTerm + "%';";
@@ -1009,7 +1008,7 @@ void* serverCommands(void* userData)
                 else {
                     sendStr = "[LOOKUP] 200 OK\nFound:" + count + "\nstock_symbol stock_amount\n   " + resultant;
                 }
-                send(clientID, sendStr.c_str(), sizeof(buf), 0);
+                send(clientID, sendStr.c_str(), sizeof(Buff), 0);
             }
 
             // Default response to invalid commands
