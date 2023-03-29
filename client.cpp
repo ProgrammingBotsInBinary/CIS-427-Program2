@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 
-// Server Port/Socket/Addr related headers
+// Server Port, Socket, Address header files
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>

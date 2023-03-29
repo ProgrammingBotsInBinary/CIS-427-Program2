@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <vector>
 
-// Server Port/Socket/Addr related headers
+// Server Port, Socket, Addrress header files
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -467,7 +467,7 @@ void* serverCommands(void* userData) {
 
                     //  Check SQL status
                     if (rc != SQLITE_OK) {
-                        fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                        fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                         sqlite3_free(zErrMsg);
                     }
                     else if (resultant == "PRESENT") {
@@ -486,7 +486,7 @@ void* serverCommands(void* userData) {
 
                         //  Check SQL status
                         if (rc != SQLITE_OK) {
-                            fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                            fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                             sqlite3_free(zErrMsg);
                         }
                         else if (stod(usd_balance) >= stockPrice) {
@@ -499,7 +499,7 @@ void* serverCommands(void* userData) {
 
                             //  Check SQL status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
                             }
 
@@ -508,7 +508,7 @@ void* serverCommands(void* userData) {
                             rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
 
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
                             }
                             else if (resultant == "RECORD_PRESENT") {
@@ -519,7 +519,7 @@ void* serverCommands(void* userData) {
 
                                 //  Check SQL status
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
                                 }
                             }
@@ -531,7 +531,7 @@ void* serverCommands(void* userData) {
 
                                 //  Check SQL status
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
                                 }
                             }
@@ -543,7 +543,7 @@ void* serverCommands(void* userData) {
 
                             //  Check SQL status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
                             }
 
@@ -553,7 +553,7 @@ void* serverCommands(void* userData) {
 
                             // Check SQL status
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[BUY] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
                                 //send(clientID, "SQL error", 10, 0);
                             }
@@ -591,7 +591,7 @@ void* serverCommands(void* userData) {
                     rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
 
                     if (rc != SQLITE_OK) {
-                        fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                        fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                         sqlite3_free(zErrMsg);
                     }
                     else if (resultant == "PRESENT") {
@@ -600,7 +600,7 @@ void* serverCommands(void* userData) {
                         rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
 
                         if (rc != SQLITE_OK) {
-                            fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                            fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                             sqlite3_free(zErrMsg);
                         }
                         else if (resultant == "RECORD_NOT_PRESENT") {
@@ -615,7 +615,7 @@ void* serverCommands(void* userData) {
                             rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
 
                             if (rc != SQLITE_OK) {
-                                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                                 sqlite3_free(zErrMsg);
                             }
 
@@ -634,7 +634,7 @@ void* serverCommands(void* userData) {
                                 rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg);
 
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
                                 }
 
@@ -643,7 +643,7 @@ void* serverCommands(void* userData) {
                                 rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg);
 
                                 if (rc != SQLITE_OK) {
-                                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                                    fprintf(stderr, "[SELL] SQL error: %s\n", zErrMsg);
                                     sqlite3_free(zErrMsg);
                                 }
 
@@ -809,7 +809,7 @@ void* serverCommands(void* userData) {
                 rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
 
                 if (rc != SQLITE_OK) {
-                    fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                    fprintf(stderr, "[DEPOSIT] SQL error: %s\n", zErrMsg);
                     sqlite3_free(zErrMsg);
                 }
                 else if (resultant == "PRESENT") {
