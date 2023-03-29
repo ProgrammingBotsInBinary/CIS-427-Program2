@@ -54,3 +54,11 @@ After compiling both of the files you can now run them
 | QUIT | QUIT as Mary |
 | LOGOUT | LOGOUT as Mary | 
 | SHUTDOWN | SHUTDOWN as Root |
+
+
+Table showing the test cases with details
+
+| Test # | Description of test | Input Value | Actual Output | Test Pass/Fail|
+| --- | --- || --- | --- || --- | --- || --- | --- || --- | --- || --- | --- |
+| 1 | | Login as root | | LOGIN root root| |LOGIN root root| | Pass 
+
