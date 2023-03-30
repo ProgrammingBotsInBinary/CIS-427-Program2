@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
     else if (resultant == "USER_NOT_PRESENT") {
         // Create the root user:
-        fprintf(stdout, "Root user is not present. Attempting to add the user.\n");
+        fprintf(stdout, "[USER] Root user is not present. Attempting to add the user.\n");
 
         // Adds the root user
         sql = "INSERT INTO users VALUES (1, 'root123@gmail.com', 'Root', 'User', 'root', 'root01', 800);";
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
         sqlite3_free(zErrMsg);
-        std::cout << "Error returned Resultant = " << resultant << std::endl;
+        std::cout << "[Error] Error returned Resultant = " << resultant << std::endl;
     }
 
     // Checks if Mary exists in the database. If no user is found, create it
@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
         sqlite3_free(zErrMsg);
     }
     else if (resultant == "USER_NOT_PRESENT") {
-        fprintf(stdout, "Creating a new user.\n");
+        fprintf(stdout, "[User] Creating a new user.\n");
 
         // Adds mary
         sql = "INSERT INTO users VALUES (2, 'marypoppins@gmail.com', 'Mary', 'Poppins', 'mary', 'mary01', 800);";
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
         }
     }
     else if (resultant == "USER_PRESENT") {
-        std::cout << "\tMary already exists in the users table, continuing.\n";
+        std::cout << "\t[User] Mary already exists in the users table, continuing.\n";
     }
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
         sqlite3_free(zErrMsg);
     }
     else if (resultant == "USER_NOT_PRESENT") {
-        fprintf(stdout, "Creating a new user. john.\n");
+        fprintf(stdout, "[User] Creating a new user. john.\n");
 
         // Adds john
         sql = "INSERT INTO users VALUES (3, 'johndoe@gmail.com', 'John', 'Doe', 'john', 'john01', 800);";
@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
         }
     }
     else if (resultant == "USER_PRESENT") {
-        std::cout << "\tJohn already exists in the users table, continuing.\n";
+        std::cout << "\t[User] John already exists in the users table, continuing.\n";
     }
     else {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
         sqlite3_free(zErrMsg);
     }
     else if (resultant == "USER_NOT_PRESENT") {
-        fprintf(stdout, "Creating a new user. 'moe'.\n");
+        fprintf(stdout, "[User] Creating a new user. 'moe'.\n");
 
         // Adds moe
         sql = "INSERT INTO users VALUES (4, 'moecurly@gmail.com', 'Moe', 'Curly', 'moe', 'moe01', 800);";
@@ -403,7 +403,7 @@ std::string extractInfo(char line[], std::string command) {
 }
 
 void* serverCommands(void* userData) {
-    std::cout << "Username: " << ((userInfo*)userData)->user << std::endl;;
+    std::cout << "[COMMAND] Username: " << ((userInfo*)userData)->user << std::endl;;
     int clientIndex = ((userInfo*)userData)->socket;
     int clientID = nClient[((userInfo*)userData)->socket];
 
@@ -439,7 +439,7 @@ void* serverCommands(void* userData) {
                 send(clientID, "You are already logged in", 27, 0);
             }
             else if (command == "BUY") {
-                std::cout << "Buy command!" << std::endl;
+                std::cout << "[BUY] Buy command!" << std::endl;
 
                 // Checks if the client used the command properly
                 if (!extractInfo(Buff, infoArr, command)) {
@@ -450,7 +450,6 @@ void* serverCommands(void* userData) {
                     // Check if the user exists within the user table 
                     std::string sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE users.ID=" + (std::string)id + "), 'PRESENT', 'NOT_PRESENT') result;";
                     rc = sqlite3_exec(db, sql.c_str(), callback, ptr, &zErrMsg);
-                    std::cout << "RC is equal to: " << rc << std::endl;
 
                     //  Check SQL status
                     if (rc != SQLITE_OK) {
@@ -459,11 +458,11 @@ void* serverCommands(void* userData) {
                     }
                     else if (resultant == "PRESENT") {
                         // Confirm user exists
-                        fprintf(stdout, "User Exists in Users Table.\n");
+                        fprintf(stdout, "[User] User Exists in Users Table.\n");
 
                         // Calculate stock price
                         double stockPrice = std::stod(infoArr[1]) * std::stod(infoArr[2]);
-                        std::cout << "Stock Price: " << stockPrice << std::endl;
+                        std::cout << "[BUY] Stock Price: " << stockPrice << std::endl;
 
                         // Get the usd balance of the user
                         sql = "SELECT usd_balance FROM users WHERE users.ID=" + (std::string)id;
@@ -482,7 +481,7 @@ void* serverCommands(void* userData) {
                             double difference = stod(usd_balance) - stockPrice;
                             std::string sql = "UPDATE users SET usd_balance=" + std::to_string(difference) + " WHERE ID =" + id + ";";
                             rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
-                            std::cout << "User Balance Updated: " << difference << std::endl;
+                            std::cout << "[BUY] User Balance Updated: " << difference << std::endl;
 
                             //  Check SQL status
                             if (rc != SQLITE_OK) {
@@ -566,7 +565,7 @@ void* serverCommands(void* userData) {
                 std::cout << "[SERVER] Successfully executed BUY command\n\n";
             }
             else if (command == "SELL") {
-                std::cout << "Sell command!" << std::endl;
+                std::cout << "[SELL] Sell command!" << std::endl;
                 // Check if the client used the command properly
                 if (!extractInfo(Buff, infoArr, command)) {
                     std::cout << "[SELL] Invalid command: Missing information" << std::endl;
@@ -660,7 +659,7 @@ void* serverCommands(void* userData) {
             }
             else if (command == "LIST") {
                 if (idINT == 1) {
-                    std::cout << "List command." << std::endl;
+                    std::cout << "[LIST] List command." << std::endl;
                     resultant = "";
 
                     // List all records in stocks table for user_id = 1
@@ -963,7 +962,7 @@ void newConnection()
     else {
 
         void* temp = &nNewClient;
-        std::cout << nNewClient << std::endl;
+        std::cout << "[SOCKET] Client: " << nNewClient << std::endl;
 
         int nIndex;
         for (nIndex = 0; nIndex < 5; nIndex++)
@@ -1075,7 +1074,7 @@ void clientData()
                     }
                     else {
                         std::cout << std::endl << "Received data from:" << nClient[nIndex] << "[Message: " << sBuff << " size of array: " << strlen(sBuff) << "] Error 400" << std::endl;
-                        send(nClient[nIndex], "Command does not exist.", 24, 0);
+                        send(nClient[nIndex], "[ERROR] Command does not exist.", 24, 0);
                     }
                     break;
                 }
