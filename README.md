@@ -2,6 +2,9 @@
 "Online Stock Trading" 
 ## Team Members
 Fadi Baza, Connor Fox, and Austin Hall
+## Responsibilities
+Fadi: Debugging, testing logistics, client modification, and documentation. 
+Connor & Austin: General updating program functionnality to support Assignment 2 requirements such as LOOKUP, WHO, etc. 
 ## Required Software
 If not on Mac OS, a SSH client will be required, we reccomend WinSCP.
 
