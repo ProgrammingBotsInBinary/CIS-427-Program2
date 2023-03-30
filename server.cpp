@@ -19,7 +19,6 @@
 #include <arpa/inet.h>
 #include "sqlite3.h"
 
-
 #define server_port  3976
 #define max_wait  5
 #define max_output  256
@@ -39,7 +38,6 @@ const char* sql;
 int rc;
 std::string resultant;
 std::string* ptr = &resultant;
-
 
 typedef struct
 {
@@ -70,7 +68,6 @@ int nMaxFd;
 pthread_t thread_handles;
 long thread;
 
-
 // Functions
 std::string buildCommand(char*);
 std::string extractInfo(char*, std::string);
@@ -81,14 +78,10 @@ std::string getPassword(char line[], int n);
 void newConnection();
 void clientData();
 
-
-
 int main(int argc, char* argv[]) {
 
-    #pragma region Database Setup
     // Open Database and Connect to Database
     rc = sqlite3_open("DB.sqlite", &db);
-
 
     // Check if Database was opened successfully
     if (rc) {
@@ -98,7 +91,6 @@ int main(int argc, char* argv[]) {
     else {
         fprintf(stderr, "Opened database successfully\n");
     }
-
 
     // Create sql users table creation command
     sql = "create table if not exists users\
@@ -115,7 +107,6 @@ int main(int argc, char* argv[]) {
     // Execute users table creation
     rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
 
-
     // Create sql stocks table creation command
     sql = "create table if not exists stocks (\
         ID INTEGER PRIMARY KEY AUTOINCREMENT,\
@@ -128,7 +119,6 @@ int main(int argc, char* argv[]) {
     // Execute stocks table creation
     rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
 
-
     // Checks if the root exists in the database. If no user is found, create it
     sql = "SELECT IIF(EXISTS(SELECT 1 FROM users WHERE  users.user_name='root'), 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
     rc = sqlite3_exec(db, sql, callback, ptr, &zErrMsg);
@@ -137,6 +127,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "SQL error: %s\n", zErrMsg);
         sqlite3_free(zErrMsg);
     }
+
     else if (resultant == "USER_NOT_PRESENT") {
         // Create the root user:
         fprintf(stdout, "Root user is not present. Attempting to add the user.\n");
@@ -307,7 +298,6 @@ int main(int argc, char* argv[]) {
         std::cout << "[SOCKET] Bound socket to the local port!\n";
     }
 
-
     //Listen to the command requests from the client
     nRet = listen(nSocket, max_wait);
     if (nRet < 0) {
@@ -366,8 +356,6 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-
-
 
     for (int l = 0; l < 10; l++) {
         close(nClient[l]);
@@ -937,7 +925,6 @@ bool extractInfo(char line[], std::string info[], std::string command) {
     }
 
     return true;
-
 }
 
 static int callback(void* ptr, int count, char** data, char** azColName) {
@@ -1001,7 +988,6 @@ void newConnection()
         printf("[NEW CONNECTION] Socket FD is %d, IP is: %s, PORT: %d\n", nNewClient, inet_ntoa(srv.sin_addr), ntohs(srv.sin_port));
         send(nClient[nIndex], "[SERVER] You are now connected!", 47, 0);
     }
-
 }
 
 void clientData()
@@ -1048,14 +1034,11 @@ void clientData()
                         struct sockaddr_in client_addr;
                         socklen_t addrlen;
 
-
                         std::cout << "[LOGIN] Username: " << info << " Socket: " << u.socket << std::endl;
 
                         std::string commandSql = "SELECT IIF(EXISTS(SELECT * FROM users WHERE user_name = '" + info + "' AND password = '" + passInfo + "') , 'USER_PRESENT', 'USER_NOT_PRESENT') result;";
                         sql = commandSql.c_str();
                         sqlite3_exec(db, sql, callback, 0, &zErrMsg);
-
-
 
                         if (resultant == "USER_PRESENT") {
                             std::cout << "[LOGIN] Attempting Login. " << std::endl;
@@ -1064,10 +1047,9 @@ void clientData()
                             getpeername(nClient[nIndex], (struct sockaddr*)&client_addr, &addrlen);
                             tempStruct.ip = "";
                             std::cout << "[LOGIN] IP address: " << inet_ntoa(client_addr.sin_addr) << std::endl;
-                            //for (int i = 0; i < sizeof(inet_ntoa(srv.sin_addr)) + 1; i++) {
                             tempStruct.ip = inet_ntoa(client_addr.sin_addr);
                             std::cout << tempStruct.ip << std::endl;
-                            //}
+                            
                             tempStruct.user = u.user;
 
                             list.push_back(tempStruct);
@@ -1078,7 +1060,6 @@ void clientData()
                             u.id = stoi(resultant);
 
                             pthread_create(&(list.at(list.size() - 1).userThread), NULL, serverCommands, temp);
-
                         }
                         else {
                             std::cout << "[LOGIN] Invalid!" << std::endl;
@@ -1118,6 +1099,5 @@ std::string getPassword(char line[], int n) {
         info += line[i];
         i++;
     }
-
     return info;
 }
