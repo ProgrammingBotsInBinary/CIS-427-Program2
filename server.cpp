@@ -53,12 +53,12 @@ typedef struct
     std::string user;
     int socket;
     pthread_t userThread;
-}loggedUser;
+}userConnect;
 
 void* temp = malloc(sizeof(userInfo));
 userInfo u;
 
-std::vector<loggedUser> list;
+std::vector<userConnect> list;
 
 fd_set fr;
 fd_set fw;
@@ -248,7 +248,6 @@ int main(int argc, char* argv[]) {
         sqlite3_free(zErrMsg);
         std::cout << "Error returned Resultant = " << resultant << std::endl;
     }
-    #pragma endregion
 
     // Open the socket
     nSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -1023,7 +1022,7 @@ void clientData()
 
                     if (command == "LOGIN") {
                         std::string info = extractInfo(sBuff, command);
-                        loggedUser tempStruct;
+                        userConnect tempStruct;
                         u.user = info;
                         int passLength = command.length() + info.length();
                         std::string passInfo = getPassword(sBuff, passLength);
