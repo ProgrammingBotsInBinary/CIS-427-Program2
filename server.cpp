@@ -54,7 +54,7 @@ typedef struct
     std::string ip;
     std::string user;
     int socket;
-    pthread_t threadAwesome;
+    pthread_t userThread;
 }loggedUser;
 
 void* temp = malloc(sizeof(userInfo));
@@ -782,7 +782,7 @@ void* serverCommands(void* userData) {
                 }
                 for (int i = 0; i < list.size(); i++) {
                     close(nClient[list.at(i).socket]);
-                    pthread_cancel((list.at(i)).threadAwesome);
+                    pthread_cancel((list.at(i)).userThread);
                 }
                 close(nSocket);
                 std::cout << "[SERVER] Closed Server socket: " << nSocket << std::endl;
@@ -1077,7 +1077,7 @@ void clientData()
                             sqlite3_exec(db, sql, callback, 0, &zErrMsg);
                             u.id = stoi(resultant);
 
-                            pthread_create(&(list.at(list.size() - 1).threadAwesome), NULL, serverCommands, temp);
+                            pthread_create(&(list.at(list.size() - 1).userThread), NULL, serverCommands, temp);
 
                         }
                         else {
