@@ -40,21 +40,7 @@ After compiling both of the files you can now run them
 ./client localhost
 ```
 
-| Command | Description |
-| --- | --- |
-| LOGIN root root01 | login as root |
-| BUY . . .  | buy something as root |
-| SELL . . . | sell something as root |
-| LIST | List all accounts |
-| Login from a different terminal/ session |
-| LOGIN Mary Mary01 | login as Mary |
-| DEPOSIT 10 | deposit 10 as Mary |
-| BUY . . . | buy something as Mary |
-| WHO | who am I? As Mary |
-| LOOKUP MSFT | lookup MSFT |
-| LIST | LIST as root! |
-| LOGOUT | LOGOUT as root! |
-| BALANCE | BALANCE as Mary |
-| QUIT | QUIT as Mary |
-| LOGOUT | LOGOUT as Mary | 
-| SHUTDOWN | SHUTDOWN as Root |
+## Testing Scenarios 
+Please visit the following Google Docs link to view our test cases:
+
+https://docs.google.com/document/d/1_UP3E_o_xoeTF11-51tjEQqjw5OVrwL1CxDUplYCIow/edit?usp=sharing
